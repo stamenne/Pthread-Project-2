@@ -45,33 +45,31 @@ int num_substring(int t)
 //add your logic here
 //1, how to distribute different parts of string s1 into different threads
 //2, how to sum up the total number of substrings from all threads
-	int thread_number = (int)(size_t)arg;
-
-	/*assign each thread the correct amount of emojis*/
-	int begin = thread_number * perThread;
-	int end = start + perThread;
-
-	int i,j,k;
+	int total = 0;
 	int count;
+	int section = n1 / NUM_THREADS;
 
-	for (i = 0; i <= (n1-n2); i++){   
-		count=0;
-		for(j = i,k = 0; k < n2; j++,k++){  /*search for the next string of size of n2*/  
-			if (*(s1+j)!=*(s2+k)){
+	int begin = t * section;
+	int end = begin + section;
+
+	for(int i = begin; i < end && i <= (n1 - n2); i++){
+		count = 0;
+		for(j = i; k = 0; k < n2; j++, k++){
+			if(*(s1+j) !=* (s2+k)){
 				break;
-			}else{
+			}
+			else{
 				count++;
 			}
 
-			if(count==n2){  
-				total++;		/*find a substring in this step*/   
-			}                       
+			if(count == n2){
+				total++;
+			}
 		}
 	}
 	
-	
-	
-    return 0;
+	countArray[t] = total;
+    return total;
 }
 
 
@@ -89,7 +87,6 @@ int main(int argc, char *argv[])
     pthread_t threads[NUM_THREADS];
     int t, rc;
     int totalNum = 0;
-	int perThread = n1 / NUM_THREADS;
 	readf(fp);
 
 	for(t=0; t<NUM_THREADS; t++){
@@ -99,9 +96,10 @@ int main(int argc, char *argv[])
             exit(-1);
         }
     }
-
+	
     for(t=0; t<NUM_THREADS; t++){
         pthread_join(threads[t], NULL);
+		totalNum += countArray[t];
     }
 
  	printf("The number of substrings is: %d\n", totalNum);
